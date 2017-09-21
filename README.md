@@ -1,4 +1,4 @@
-# DG - AI Implememntation of the Draw and Guess Game
+# DG
 
 ## Introduction
 This branch is used for all the documentation
