@@ -1,4 +1,4 @@
 # DG
 
 ## Introduction
-This branch is used for all the documentation
+This branch is used for keeping track of all the documentation
