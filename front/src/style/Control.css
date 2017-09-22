@@ -1,0 +1,7 @@
+#control {
+  height: 560px;
+}
+
+::-webkit-scrollbar { 
+  display: none; 
+}

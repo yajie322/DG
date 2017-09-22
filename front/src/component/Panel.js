@@ -1,11 +1,16 @@
 import React, { Component } from 'react';
-import { Segment } from 'semantic-ui-react';
+import { Segment, Label } from 'semantic-ui-react';
 
 class Panel extends Component {
   constructor (props) {
     super(props);
     this.host = props.host;
+    this.host.panel = this;
+    this.startDrawing = this.startDrawing.bind(this);
+    this.stopDrawing = this.stopDrawing.bind(this);
+    this.resizeCanvas = this.resizeCanvas.bind(this);
     this.state = {
+                   enabled: false,
                    isDrawing: false,
                    current: [],
                    strokes: []
@@ -19,24 +24,33 @@ class Panel extends Component {
     this.canvasOffsetY = rect.top;
     this.canvasFrame = document.getElementById('canvasFrame');
     this.context = this.refs.canvas.getContext('2d');
-    window.addEventListener('resize', this.resizeCanvas.bind(this));
-    canvas.addEventListener('mousedown', 
-                            this.startDrawing.bind(this));
-    canvas.addEventListener('mouseup', 
-                            this.stopDrawing.bind(this));
-    canvas.addEventListener('mousemove',
-                            this.draw.bind(this));
+    window.addEventListener('resize', this.resizeCanvas);
+    ['touchstart', 'mousedown'].forEach((e) => {
+      canvas.addEventListener(e, this.startDrawing);
+    });
+    ['touchend', 'mouseup'].forEach((e) => {
+      canvas.addEventListener(e, this.stopDrawing);
+    });
+    canvas.addEventListener('touchmove', (e) => {
+      e.preventDefault();
+      this.draw(e.touches[0].clientX, e.touches[0].clientY);
+    });
+    canvas.addEventListener('mousemove', (e) => {
+      e.preventDefault();
+      this.draw(e.clientX, e.clientY);
+    });
     this.resizeCanvas();
+    this.context.beginPath();
   }
 
-  startDrawing () {
-    if (!this.host.state.enabled)
+  startDrawing (e) {
+    if (!this.state.enabled)
       return;
     this.setState({ isDrawing: true });
   }
 
   stopDrawing () {
-    if (!this.host.state.enabled)
+    if (!this.state.enabled)
       return;
     let current = this.state.current;
     this.state.strokes.push(current);
@@ -46,29 +60,37 @@ class Panel extends Component {
                   });
   };
 
-  draw (e) {
-    if (!this.state.isDrawing)
-      return;
-    let currentX = e.clientX - this.canvasOffsetX;
-    let currentY = e.clientY - this.canvasOffsetY;
-    let stroke = this.state.current;
-    if (stroke.length) {
-      let lastX = stroke[stroke.length - 2];
-      let lastY = stroke[stroke.length - 1];
-      let context = this.context;
-      context.moveTo(lastX, lastY);
-      context.lineTo(currentX, currentY);
-      context.stroke();
+  encodeStroke () {
+    let strokes = this.state.strokes;
+    return strokes.map(stroke => stroke.join('|'))
+                  .join('+');
+  }
+
+  draw (x, y) {
+    if (this.state.isDrawing) {
+      let currentX = x - this.canvasOffsetX;
+      let currentY = y - this.canvasOffsetY;
+      console.log(currentX, currentY);
+      let stroke = this.state.current;
+      if (stroke.length) {
+        let lastX = stroke[stroke.length - 2];
+        let lastY = stroke[stroke.length - 1];
+        let context = this.context;
+        context.moveTo(lastX, lastY);
+        context.lineTo(currentX, currentY);
+        context.stroke();
+      }
+      stroke.push(currentX);
+      stroke.push(currentY);
     }
-    stroke.push(currentX);
-    stroke.push(currentY);
   }
 
   drawStroke (stroke) {
+    let context = this.context;
     for (let i = 2; i < stroke.length; i += 2) {
-      this.context.moveTo(stroke[i - 2], stroke[i - 1]);
-      this.context.lineTo(stroke[i], stroke[i + 1]);
-      this.context.stroke();
+      context.moveTo(stroke[i - 2], stroke[i - 1]);
+      context.lineTo(stroke[i], stroke[i + 1]);
+      context.stroke();
     }
   }
 
@@ -78,26 +100,30 @@ class Panel extends Component {
       this.drawStroke(this.state.strokes[i]);
   }
 
-  generateStatusBar () {
-    let enabled = this.host.state.enabled;
-    let color = enabled ? 'green' : 'red';
-    let text = enabled ? 'Panel is enabled' :
-                         'Panel is disabled';
-    return <Segment color={ color }>{ text }</Segment>;
-  }
-
-  generateCanvas () {
-    return <Segment id='canvasFrame'>
-             <canvas ref='canvas' 
-                     height={ 350 }/>
-           </Segment>;
+  clearCanvas () {
+    this.refs.canvas.width = this.refs.canvas.width;
+    this.context.beginPath();
+    this.setState({
+                    current: [],
+                    strokes: []
+                  });
   }
 
   render () {
-    return <div>
-             { this.generateStatusBar() }
-             { this.generateCanvas() }
-           </div>;
+    let enabled = this.state.enabled;
+    let color = enabled ? 'green' : 'red';
+    let text = enabled ? 'Drawing is enabled' :
+                         'Drawing is disabled';
+    return <Segment id='canvasFrame'>
+             <Label ribbon 
+                    color={ color }>
+               { text }
+             </Label>
+             <div>
+               <canvas ref='canvas' 
+                       height={ 500 }/>
+             </div>
+           </Segment>;
   }
 }
 

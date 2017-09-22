@@ -7,11 +7,6 @@ import Panel from './Panel.js';
 import Control from './Control.js';
 
 class App extends Component {
-  constructor (props) {
-    super(props);
-    this.state = { enabled: false };
-  }
-
   render() {
     return <div>
              <Header id='title'
@@ -21,10 +16,10 @@ class App extends Component {
              <Grid divided='vertically'
                    id='frame'>
                <Grid.Row columns={ 2 }>
-                 <Grid.Column width={ 9 }>
+                 <Grid.Column width={ 10 }>
                    <Panel host={ this } />
                  </Grid.Column>
-                 <Grid.Column width={ 7 }>
+                 <Grid.Column width={ 6 }>
                    <Control host={ this } />
                  </Grid.Column>
                </Grid.Row>
