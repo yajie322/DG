@@ -63,7 +63,7 @@ class Panel extends Component {
   encodeStroke () {
     let strokes = this.state.strokes;
     return strokes.map(stroke => stroke.join('|'))
-                  .join('+');
+                  .join('-');
   }
 
   draw (x, y) {
