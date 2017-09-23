@@ -3,10 +3,10 @@ import { Label, Segment, Grid } from 'semantic-ui-react';
 
 import '../style/Control.css';
 
-const CONVERSATION = [ 'Hi, Welcome to the Draw and Guess Game!',
+const CONVERSATION = [ 'Hi, Welcome to the Draw & Guess Game!',
                        'Want to start now?',
-                       'Yes, Let\'s start the game!',
-                       'No, not in the mood right now.',
+                       'Yeeee, let\'s start the game!',
+                       'Nope, not in the mood right now.',
                        'OK, let me know when you want to start.',
                        'Start the game, now!',
                        'Please draw an airplane, a cat, or a dog.',
@@ -14,15 +14,20 @@ const CONVERSATION = [ 'Hi, Welcome to the Draw and Guess Game!',
                        'I\'m done with my drawing',
                        'Oops, I did something wrong. Please erase the whole thing',
                        'OK, let me guess...',
-                       'All right, all erased, now you can start over'];
+                       'All right, all erased, now you can start over',
+                       'Yes!',
+                       'No...',
+                       'Hooray! Ain\'t I awesome!',
+                       'Wanna start over to the next round?',
+                       'Sorry I can\'t figure out your drawing :( ...'];
  
 
 class Control extends Component {
   constructor (props) {
     super(props);
     this.panel = props.host.panel;
-    this.controlCanvas = this.controlCanvas.bind(this);
     this.state = { conversation: [] };
+    this.start = this.start.bind(this);
   }
 
   componentDidMount () {
@@ -69,6 +74,7 @@ class Control extends Component {
   }
 
   start () {
+    this.panel.clearCanvas();
     let conversation = [0, 1].map(this.dialog);
     conversation.push(this.action(2, () => {
       conversation.pop();
@@ -97,13 +103,7 @@ class Control extends Component {
     conversation.push(this.dialog(6));
     conversation.push(this.dialog(7));
     conversation.push(this.action(8, () => {
-      this.panel.setState({ enabled: false });
-      conversation.pop();
-      conversation.pop();
-      conversation.push(this.action(8));
-      conversation.push(this.dialog(10));
-      // TODO Rename this part to check()
-      this.setState({ conversation: conversation });
+      this.check();
     }));
     conversation.push(this.action(9, () => {
       this.panel.clearCanvas();
@@ -116,9 +116,45 @@ class Control extends Component {
     this.setState({ conversation: conversation });
   }
 
-  controlCanvas () {
-    this.panel.setState({ enabled: !this.panel.state.enabled });
-    this.forceUpdate();
+  check () {
+    this.panel.setState({ enabled: false });
+    let conversation = this.state.conversation;
+    conversation.pop();
+    conversation.pop();
+    conversation.push(this.action(8));
+    conversation.push(this.dialog(10));
+    this.setState({ conversation: conversation });
+    this.panel.sendStroke((result) => {
+      this.round(0, result);
+    });
+  }
+
+  round (i, result) {
+    let conversation = this.state.conversation;
+    if (i < result.length) {
+      conversation.push(this.answer(result[i]));
+      conversation.push(this.action(12, () => {
+        conversation.pop();
+        conversation.pop();
+        conversation.push(this.action(12));
+        conversation.push(this.dialog(14));
+        conversation.push(this.dialog(15));
+        conversation.push(this.action(12, this.start));
+        this.setState({ conversation: conversation });
+      }));
+      conversation.push(this.action(13, () => {
+        conversation.pop();
+        conversation.pop();
+        conversation.push(this.action(13));
+        this.round(i + 1, result);
+      }));
+    } else if (i === result.length) {
+        conversation.push(this.dialog(16));
+        conversation.push(this.dialog(15));
+        conversation.push(this.action(12, this.start));
+        this.setState({ conversation: conversation });
+    }
+    this.setState({ conversation: conversation });
   }
 
   render () {

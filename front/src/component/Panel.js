@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import { Segment, Label } from 'semantic-ui-react';
 
+import config from '../config.json';
+
 class Panel extends Component {
   constructor (props) {
     super(props);
@@ -24,7 +26,6 @@ class Panel extends Component {
     this.canvasOffsetY = rect.top;
     this.canvasFrame = document.getElementById('canvasFrame');
     this.context = this.refs.canvas.getContext('2d');
-    window.addEventListener('resize', this.resizeCanvas);
     ['touchstart', 'mousedown'].forEach((e) => {
       canvas.addEventListener(e, this.startDrawing);
     });
@@ -39,6 +40,7 @@ class Panel extends Component {
       e.preventDefault();
       this.draw(e.clientX, e.clientY);
     });
+    window.addEventListener('resize', this.resizeCanvas);
     this.resizeCanvas();
     this.context.beginPath();
   }
@@ -70,7 +72,6 @@ class Panel extends Component {
     if (this.state.isDrawing) {
       let currentX = x - this.canvasOffsetX;
       let currentY = y - this.canvasOffsetY;
-      console.log(currentX, currentY);
       let stroke = this.state.current;
       if (stroke.length) {
         let lastX = stroke[stroke.length - 2];
@@ -94,6 +95,13 @@ class Panel extends Component {
     }
   }
 
+  sendStroke (callback) {
+    let url = 'http://' + config.host + ':' + config.port +
+              '/guess?strokes=' + this.encodeStroke();
+    fetch(url, { headers: { 'Access-Control-Allow-Origin':'*' } })
+         .then(response => response.json().then(callback));
+  }
+
   resizeCanvas () {
     this.refs.canvas.width = this.canvasFrame.clientWidth - 28;
     for (let i in this.state.strokes)
@@ -108,6 +116,8 @@ class Panel extends Component {
                     strokes: []
                   });
   }
+
+  
 
   render () {
     let enabled = this.state.enabled;
