@@ -1,3 +1,9 @@
+/*
+ * Panel
+ * @author Xiao Xin <xin.xiao@hotmail.com>
+ * Date: 09-23-17
+ */
+
 import React, { Component } from 'react';
 import { Segment, Label } from 'semantic-ui-react';
 
