@@ -14,6 +14,7 @@ DIRECTORY_CONFIRMATION_LOCALE = 'Will read raw data from this directory: {}'
 INITIATION = 'Traing data loading initiated...'
 DB_CONNECTED = 'Connection to database established...'
 DB_DETAIL_LOCALE = 'Host: {}\nPort: {}\nDatabase: {}\nCollection: {}'
+DB_URL_LOCALE = 'mongodb://{}:{}'
 CATAGORY_DETAIL_LOCALE = '{} catagories: {}'
 READ_START_LOCAL = 'Reading data from file: {}'
 READ_PROGRESS_BAR_LOCALE = '\rLoading progress: [{}] {}%'
@@ -29,7 +30,7 @@ def connect_to_db():
   port = CONFIG.get('DB', 'Port')
   db = CONFIG.get('DB', 'Database')
   collection = CONFIG.get('DB', 'Collection')
-  url = 'mongodb://{}:{}'.format(host, port, db)
+  url = DB_URL_LOCALE.format(host, port)
   collection_socket = MongoClient(url)[db][collection]
   print DB_CONNECTED
   print
@@ -54,8 +55,11 @@ def store_object(line, collection):
   obj = json.loads(line.strip())
   obj['_id'] = obj['key_id']
   del obj['timestamp']
-  del obj['_id']
-  collection.insert_one(obj)
+  del obj['key_id']
+  try:
+    collection.insert_one(obj)
+  except Exception:
+    pass
 
 def get_catagory(file_name):
   file_name = file_name.split('/')[-1]
