@@ -35,10 +35,7 @@ class Driver:
   def find_by_id(self, object_id):
     return self.__collection.find_one({ '_id': ObjectId(object_id) })
 
-  def find_multiple_catagories(self, catagory_list):
-    return self.__collection.find({ 'word': { '$in': catagory_list } })
-  
-  def find_catagory(self, catagory):
+  def find_by_catagory(self, catagory):
     return self.__collection.find({ 'word': catagory })
 
   def find_all(self):
