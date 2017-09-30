@@ -1,9 +1,9 @@
 PY=python
 
-STORE_SCRIPT='./driver/store.py'
+STORE_SCRIPT='./db/store.py'
 STORE_CONFIG='./config/store.cfg'
 
-CLEAN_SCRIPT='./driver/clean.py'
+CLEAN_SCRIPT='./db/clean.py'
 CLEAN_CONFIG='./config/clean.cfg'
 
 all: store
